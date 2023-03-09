@@ -36,7 +36,8 @@ func main() {
 	r := mux.NewRouter()
 	r.Use(controllers.ValidateRequest)
 
-	r.HandleFunc("/signin", controller.Signin)
+	r.HandleFunc("/signin", controller.Signin).Methods("POST")
+	r.HandleFunc("/signup", controller.SignUp).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":8000", r))
 }

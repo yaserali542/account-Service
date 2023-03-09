@@ -34,3 +34,29 @@ func (c *Controllers) Signin(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(account)
 
 }
+
+func (c *Controllers) SignUp(w http.ResponseWriter, r *http.Request) {
+	var registerAccount models.RegisterAccount
+
+	if err := json.NewDecoder(r.Body).Decode(&registerAccount); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		//w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	createdAccount, accountNotExist, err := c.Services.CreateAccount(&registerAccount)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !accountNotExist {
+		errMsg := "Account Exists"
+		http.Error(w, errMsg, http.StatusPreconditionFailed)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+	w.Header().Add("Content-type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(createdAccount)
+
+}

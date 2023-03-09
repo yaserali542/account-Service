@@ -8,5 +8,6 @@
     }, 
     "jwt-token-secret" : "my_secret_key",
     "pw_hash_bytes" : 64,
+    "pw_salt_bytes" : 32,
     "hmac_secret": "mysecret"
 }
