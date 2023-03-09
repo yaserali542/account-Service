@@ -8,7 +8,7 @@
     }, 
     "jwt":{
         "expire-time-minutes" : 30,
-        "refresh-time-minutes" :1,
+        "refresh-time-minutes" :25,
         "key": "my_secret_key"
     },
     "pw_hash_bytes" : 64,
