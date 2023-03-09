@@ -32,12 +32,17 @@ func main() {
 	rep := repository.Repository{Db: db}
 	service := services.AccountService{Repository: &rep}
 	controller := controllers.Controllers{Services: service}
+	middleware := controllers.Middleware{Services: service}
 
 	r := mux.NewRouter()
-	r.Use(controllers.ValidateRequest)
-
+	r.Use(middleware.ValidateRequest)
+	r.HandleFunc("/refresh-token", controller.RefreshToken).Methods("GET")
 	r.HandleFunc("/signin", controller.Signin).Methods("POST")
 	r.HandleFunc("/signup", controller.SignUp).Methods("POST")
+
+	r.HandleFunc("/testToken", middleware.ValidateJwtToken(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusAccepted)
+	}))
 
 	log.Fatal(http.ListenAndServe(":8000", r))
 }

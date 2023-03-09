@@ -23,7 +23,7 @@ func (service *AccountService) ValidateCredentials(creds models.Credentials) (*m
 		return nil, err
 	}
 	if accountNotExist {
-		return nil, errors.New("Account not exists")
+		return nil, errors.New("account not exists")
 	}
 
 	if accountDetails.UserName != creds.Username {

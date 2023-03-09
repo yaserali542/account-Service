@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/spf13/viper"
 	"github.com/yaserali542/account-Service/models"
 	"github.com/yaserali542/account-Service/services"
 )
@@ -23,6 +25,18 @@ func (c *Controllers) Signin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	account, err := c.Services.ValidateCredentials(creds)
+	jwtToken := services.GenerateToken(account.UserName)
+
+	jwtAccount := models.AccountWithJWT{
+		FirstName:      account.FirstName,
+		LastName:       account.LastName,
+		UserName:       account.UserName,
+		EmailAddress:   account.EmailAddress,
+		ProfilePicture: account.ProfilePicture,
+		JwtToken: models.JwtToken{
+			Token: jwtToken,
+		},
+	}
 
 	if err != nil {
 		errMsg := "Forbidden"
@@ -31,7 +45,7 @@ func (c *Controllers) Signin(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("Content-type", "application/json; charset=utf-8")
-	json.NewEncoder(w).Encode(account)
+	json.NewEncoder(w).Encode(jwtAccount)
 
 }
 
@@ -40,7 +54,6 @@ func (c *Controllers) SignUp(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.NewDecoder(r.Body).Decode(&registerAccount); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
-		//w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -58,5 +71,46 @@ func (c *Controllers) SignUp(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 	w.Header().Add("Content-type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(createdAccount)
+
+}
+
+func (*Controllers) RefreshToken(w http.ResponseWriter, r *http.Request) {
+	v := viper.GetViper()
+
+	jwtTokenString := r.Header.Get("token")
+
+	if jwtTokenString == "" {
+		http.Error(w, "token is missing", http.StatusBadRequest)
+		return
+	}
+	claims := &models.Claims{}
+
+	// Parse the JWT string and store the result in `claims`.
+	// Note that we are passing the key in this method as well. This method will return an error
+	// if the token is invalid (if it has expired according to the expiry time we set on sign in),
+	// or if the signature does not match
+	tkn, err := jwt.ParseWithClaims(jwtTokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		jwtKey := v.GetString("jwt.key")
+		return []byte(jwtKey), nil
+	})
+	if err != nil {
+		if err == jwt.ErrSignatureInvalid {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		//w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if !tkn.Valid {
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	jwtToken := models.JwtToken{
+		Token: services.GenerateToken(claims.Username),
+	}
+	w.Header().Add("Content-type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(&jwtToken)
 
 }

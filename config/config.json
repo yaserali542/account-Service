@@ -6,8 +6,13 @@
         "username": "postgres",
         "password": "admin"
     }, 
-    "jwt-token-secret" : "my_secret_key",
+    "jwt":{
+        "expire-time-minutes" : 30,
+        "refresh-time-minutes" :1,
+        "key": "my_secret_key"
+    },
     "pw_hash_bytes" : 64,
     "pw_salt_bytes" : 32,
     "hmac_secret": "mysecret"
+
 }
