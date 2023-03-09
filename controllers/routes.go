@@ -114,3 +114,23 @@ func (*Controllers) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(&jwtToken)
 
 }
+
+func (c *Controllers) GetMinimalUserInfo(w http.ResponseWriter, r *http.Request) {
+	var username models.BasicFieldsRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&username); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	basicDetails, err := c.Services.GetMinimalUserInfo(username.UserName)
+	if err != nil {
+		errMsg := "internal server error"
+		http.Error(w, errMsg, http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(basicDetails)
+
+}

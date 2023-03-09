@@ -15,9 +15,15 @@ func (repo *Repository) GetUserDetails(username string) (*models.Account, bool, 
 
 	var account models.Account
 	db := repo.Db.First(&account, "user_name = ?", username)
-	if db.Error != nil && errors.Is(db.Error, gorm.ErrRecordNotFound) {
-		return nil, true, nil
+	if db.Error != nil {
+		if errors.Is(db.Error, gorm.ErrRecordNotFound) {
+			return nil, true, nil
+		} else {
+			return nil, true, db.Error
+		}
+
 	}
+
 	return &account, false, nil
 
 }
@@ -28,4 +34,17 @@ func (repo *Repository) CreateAccount(account *models.Account) (*models.Account,
 		return nil, err
 	}
 	return account, nil
+}
+
+func (repo *Repository) GetMinimalUserInfo(username string) (*models.BasicFields, error) {
+	var account models.Account
+	db := repo.Db.First(&account, "user_name = ?", username)
+	if db.Error != nil {
+		return nil, db.Error
+	}
+	return &models.BasicFields{
+		ID:           account.ID,
+		EmailAddress: account.EmailAddress,
+		UserName:     account.UserName,
+	}, nil
 }

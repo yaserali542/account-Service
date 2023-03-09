@@ -43,7 +43,7 @@ func main() {
 	r.HandleFunc("/testToken", middleware.ValidateJwtToken(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)
 	}))
-
+	r.HandleFunc("/basic-details", middleware.ValidateJwtToken(controller.GetMinimalUserInfo)).Methods("POST")
 	log.Fatal(http.ListenAndServe(":8000", r))
 }
 

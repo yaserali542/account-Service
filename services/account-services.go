@@ -39,6 +39,12 @@ func (service *AccountService) ValidateCredentials(creds models.Credentials) (*m
 
 }
 
+func (service *AccountService) GetMinimalUserInfo(username string) (*models.BasicFields, error) {
+
+	return service.Repository.GetMinimalUserInfo(username)
+
+}
+
 func (service *AccountService) CreateAccount(registerAccount *models.RegisterAccount) (*models.Account, bool, error) {
 	accountDetails, accountNotExist, err := service.Repository.GetUserDetails(registerAccount.UserName)
 
