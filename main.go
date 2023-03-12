@@ -38,7 +38,9 @@ func main() {
 	r.Use(middleware.ValidateRequest)
 	r.HandleFunc("/refresh-token", controller.RefreshToken).Methods("GET")
 	r.HandleFunc("/signin", controller.Signin).Methods("POST")
+	r.HandleFunc("/verify/signin", controller.Signin).Methods("POST")
 	r.HandleFunc("/signup", controller.SignUp).Methods("POST")
+	r.HandleFunc("/account/{id}", controller.GetUserInfoById).Methods("GET")
 
 	r.HandleFunc("/testToken", middleware.ValidateJwtToken(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusAccepted)

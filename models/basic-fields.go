@@ -6,6 +6,7 @@ type BasicFields struct {
 	ID           uuid.UUID `gorm:"primary_key;type:uuid;default:uuid_generate_v4()" json:"id"`
 	UserName     string    `json:"user_name"`
 	EmailAddress string    `json:"email_address"`
+	Role         string    `json:"role"`
 }
 
 type BasicFieldsRequest struct {

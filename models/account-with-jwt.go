@@ -6,6 +6,7 @@ type AccountWithJWT struct {
 	ProfilePicture []byte `json:"profile_picture"`
 	UserName       string `json:"user_name"`
 	EmailAddress   string `json:"email_address"`
+	Role           string `json:"role"`
 	JwtToken
 }
 

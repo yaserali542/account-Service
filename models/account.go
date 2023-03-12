@@ -11,4 +11,5 @@ type Account struct { // table name: parents
 	EmailAddress   string    `json:"email_address"`
 	HashedPassword []byte    `json:"-"`
 	Salt           []byte    `json:"-"`
+	Role           string    `gorm:"default:'customer'" json:"role"`
 }

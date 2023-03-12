@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/jinzhu/gorm"
+	uuid "github.com/satori/go.uuid"
 	"github.com/yaserali542/account-Service/models"
 )
 
@@ -46,5 +47,15 @@ func (repo *Repository) GetMinimalUserInfo(username string) (*models.BasicFields
 		ID:           account.ID,
 		EmailAddress: account.EmailAddress,
 		UserName:     account.UserName,
+		Role:         account.Role,
 	}, nil
+}
+
+func (repo *Repository) GetUserInfoFromId(id uuid.UUID) (*models.Account, error) {
+	var account models.Account
+	db := repo.Db.First(&account, "id = ?", id)
+	if db.Error != nil {
+		return nil, db.Error
+	}
+	return &account, nil
 }

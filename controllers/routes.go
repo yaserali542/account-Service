@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/gorilla/mux"
+	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
 	"github.com/yaserali542/account-Service/models"
 	"github.com/yaserali542/account-Service/services"
@@ -32,6 +34,7 @@ func (c *Controllers) Signin(w http.ResponseWriter, r *http.Request) {
 		LastName:       account.LastName,
 		UserName:       account.UserName,
 		EmailAddress:   account.EmailAddress,
+		Role:           account.Role,
 		ProfilePicture: account.ProfilePicture,
 		JwtToken: models.JwtToken{
 			Token: jwtToken,
@@ -132,5 +135,58 @@ func (c *Controllers) GetMinimalUserInfo(w http.ResponseWriter, r *http.Request)
 	w.WriteHeader(http.StatusOK)
 	w.Header().Add("Content-type", "application/json; charset=utf-8")
 	json.NewEncoder(w).Encode(basicDetails)
+
+}
+
+func (c *Controllers) GetUserInfoById(w http.ResponseWriter, r *http.Request) {
+	//fmt.Println("this method is invoked")
+	vars := mux.Vars(r)
+	id, _ := uuid.FromString(vars["id"])
+
+	accountDetails, err := c.Services.GetUserInfoFromId(id)
+	if err != nil {
+		errMsg := "internal server error"
+		http.Error(w, errMsg, http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(accountDetails)
+
+}
+
+func (c *Controllers) VerfierSignin(w http.ResponseWriter, r *http.Request) {
+
+	var creds models.Credentials
+	// Get the JSON body and decode into credentials
+	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		//w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	account, err := c.Services.ValidateVerifierCredentials(creds)
+	jwtToken := services.GenerateToken(account.UserName)
+
+	jwtAccount := models.AccountWithJWT{
+		FirstName:    account.FirstName,
+		LastName:     account.LastName,
+		UserName:     account.UserName,
+		EmailAddress: account.EmailAddress,
+		Role:         account.Role,
+		//ProfilePicture: account.ProfilePicture,
+		JwtToken: models.JwtToken{
+			Token: jwtToken,
+		},
+	}
+
+	if err != nil {
+		errMsg := "Forbidden"
+		http.Error(w, errMsg, http.StatusForbidden)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Header().Add("Content-type", "application/json; charset=utf-8")
+	json.NewEncoder(w).Encode(jwtAccount)
 
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 
+	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
 	"github.com/yaserali542/account-Service/models"
 	"github.com/yaserali542/account-Service/repository"
@@ -85,5 +86,36 @@ func generateSalt() []byte {
 	io.ReadFull(rand.Reader, salt)
 
 	return salt
+
+}
+
+func (service *AccountService) GetUserInfoFromId(id uuid.UUID) (*models.Account, error) {
+
+	return service.Repository.GetUserInfoFromId(id)
+
+}
+func (service *AccountService) ValidateVerifierCredentials(creds models.Credentials) (*models.Account, error) {
+	accountDetails, accountNotExist, err := service.Repository.GetUserDetails(creds.Username)
+
+	if err != nil {
+		return nil, err
+	}
+	if accountNotExist {
+		return nil, errors.New("account not exists")
+	}
+
+	if accountDetails.UserName != creds.Username {
+		return nil, errors.New("username mismatch")
+	}
+	if accountDetails.Role == "customer" {
+		return nil, errors.New("not a verifier user")
+	}
+
+	hashPassword := generateHashedPassword(creds.Password, accountDetails.Salt)
+
+	if !bytes.Equal(hashPassword, accountDetails.HashedPassword) {
+		return nil, errors.New("invalid password")
+	}
+	return accountDetails, nil
 
 }
