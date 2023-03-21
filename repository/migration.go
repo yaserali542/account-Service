@@ -66,6 +66,17 @@ func SeedAccountRecords(db *gorm.DB) error {
 			Salt:           salt,
 		}
 		db.Create(&testObject)
+		testObject = models.Account{
+			FirstName:      "Mohammed Yaser",
+			LastName:       "Ali",
+			ProfilePicture: []byte(samplePhoto),
+			UserName:       "adminadmin",
+			HashedPassword: hash,
+			EmailAddress:   "yaserali542@gmail.com",
+			Salt:           salt,
+			Role:           "verifier",
+		}
+		db.Create(&testObject)
 	}
 	return nil
 }
